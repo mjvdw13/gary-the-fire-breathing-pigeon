@@ -6,6 +6,10 @@ Construction Worker. Or see how long you last in Endless mode.
 
 ## Play
 
+**Online:** https://mjvdw13.github.io/gary-the-fire-breathing-pigeon/
+
+Or run it on your own computer:
+
 ```bash
 npm install     # first time only
 npm run dev     # opens http://localhost:5173
@@ -47,5 +51,8 @@ npm test            # run the tests
 npm run typecheck   # check for mistakes
 npm run build       # make a version you can share (in dist/)
 ```
+
+Every push to `main` automatically tests the game and publishes it to the link above
+(see `.github/workflows/deploy.yml`). If the tests fail, the old version stays online.
 
 The original 2D game is in `legacy-2d/` (open `legacy-2d/index.html` in a browser).

@@ -13,6 +13,8 @@ existing one more complicated.
 - `npm test` – run the tests (Vitest, no browser needed)
 - `npm run typecheck` – check types (run this after every change)
 - `npm run build` – make a shareable static build in `dist/`
+- Pushing to `main` deploys to https://mjvdw13.github.io/gary-the-fire-breathing-pigeon/ via
+  `.github/workflows/deploy.yml` (runs tests first). Asset paths must stay relative (`base: './'`).
 
 Node.js is installed at `C:\Program Files\nodejs`. If `npm` isn't found in Git Bash, run
 `export PATH="/c/Program Files/nodejs:$PATH"` first.
