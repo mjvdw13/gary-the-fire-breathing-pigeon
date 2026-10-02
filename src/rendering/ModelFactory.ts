@@ -1,17 +1,7 @@
-import {
-  BoxGeometry,
-  BufferGeometry,
-  Color,
-  ConeGeometry,
-  CylinderGeometry,
-  Group,
-  Material,
-  Mesh,
-  MeshStandardMaterial,
-  Object3D,
-  SphereGeometry,
-} from 'three';
+import { Color, Group, Material, Mesh, MeshStandardMaterial, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { partGeometry } from './partGeometry';
+import { getSurface, SurfaceName } from './surfaces';
 
 /**
  * Builds the blocky, Roblox-style 3D models from a simple list of parts.
@@ -37,6 +27,8 @@ export interface PartDef {
   /** Rotation in radians around x, y, z. */
   rot?: Vec3;
   color: string;
+  /** What it's made of: 'wood', 'brick', 'metal', 'concrete', 'glass'... (default 'plastic'). See surfaces.ts. */
+  surface?: SurfaceName;
   /** Glows (not affected by lighting). Use for eyes, lasers, fire. */
   glow?: boolean;
   /** Point the part swings around when animated (defaults to its center). E.g. a wing's shoulder. */
@@ -59,15 +51,6 @@ export interface GltfModelDef {
 }
 
 export type ModelDef = PartsModelDef | GltfModelDef;
-
-// One shared geometry per shape — every part just scales it. Cheap!
-const GEOMETRY: Record<NonNullable<PartDef['shape']>, BufferGeometry> = {
-  box: new BoxGeometry(1, 1, 1),
-  sphere: new SphereGeometry(0.5, 16, 12),
-  cylinder: new CylinderGeometry(0.5, 0.5, 1, 16),
-  cone: new ConeGeometry(0.5, 1, 16),
-};
-const SHARED_GEOMETRIES = new Set<BufferGeometry>(Object.values(GEOMETRY));
 
 /** A built model: the root object plus quick access to named parts for animation. */
 export class BlockModel {
@@ -139,12 +122,16 @@ export function buildModel(def: ModelDef): BlockModel {
 
 function buildParts(model: BlockModel, parts: PartDef[]): void {
   for (const part of parts) {
+    const surface = getSurface(part.surface ?? 'plastic');
     const material = new MeshStandardMaterial({
       color: part.color,
-      roughness: 0.55,
-      metalness: 0.05,
+      map: surface.map,
+      normalMap: surface.normalMap,
+      roughness: surface.roughness,
+      metalness: surface.metalness,
+      // Glowing parts are extra bright so the bloom effect makes them shine.
       emissive: part.glow ? new Color(part.color) : new Color(0),
-      emissiveIntensity: part.glow ? 1.2 : 1,
+      emissiveIntensity: part.glow ? 2.5 : 1,
       transparent: (part.opacity ?? 1) < 1,
       opacity: part.opacity ?? 1,
     });
@@ -152,8 +139,7 @@ function buildParts(model: BlockModel, parts: PartDef[]): void {
     material.userData.baseOpacity = part.opacity ?? 1;
     model.trackMaterial(material);
 
-    const mesh = new Mesh(GEOMETRY[part.shape ?? 'box'], material);
-    mesh.scale.set(...part.size);
+    const mesh = new Mesh(partGeometry(part.shape ?? 'box', part.size), material);
     if (part.rot) mesh.rotation.set(...part.rot);
     mesh.castShadow = (part.opacity ?? 1) >= 1;
     mesh.receiveShadow = true;
@@ -213,7 +199,7 @@ function loadGltfInto(model: BlockModel, url: string): void {
 export function disposeObject(root: Object3D): void {
   root.traverse((obj) => {
     if (obj instanceof Mesh) {
-      if (!SHARED_GEOMETRIES.has(obj.geometry)) obj.geometry.dispose();
+      if (!obj.geometry.userData.shared) obj.geometry.dispose();
       const mats: Material[] = Array.isArray(obj.material) ? obj.material : [obj.material];
       for (const m of mats) m.dispose();
     }

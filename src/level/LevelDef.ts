@@ -1,5 +1,6 @@
 import type { Group, Vector3 } from 'three';
 import type { SkySettings } from '../rendering/Renderer';
+import type { SurfaceName } from '../rendering/surfaces';
 
 type Vec3 = [number, number, number];
 
@@ -9,6 +10,8 @@ export interface BlockDef {
   pos: Vec3;
   size: Vec3;
   color: string;
+  /** What it's made of ('concrete', 'brick', 'metal', 'wood'...). See rendering/surfaces.ts. */
+  surface?: SurfaceName;
   rotY?: number;
   /** false = decoration you can walk through. Default true. */
   collide?: boolean;
@@ -34,8 +37,9 @@ export interface LevelDef {
   width: number;
   depth: number;
   floorColor: string;
+  floorSurface?: SurfaceName;
   /** Low wall around the edge. */
-  edge: { color: string; height: number };
+  edge: { color: string; height: number; surface?: SurfaceName };
   blocks: BlockDef[];
   props: PropPlacement[];
   /** Fading cloud platforms: the TOP of each cloud. */

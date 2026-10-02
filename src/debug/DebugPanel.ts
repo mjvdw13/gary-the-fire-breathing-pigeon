@@ -1,5 +1,6 @@
 import GUI from 'lil-gui';
 import { BufferAttribute, BufferGeometry, LineBasicMaterial, LineSegments } from 'three';
+import { GRAPHICS } from '../config/graphics';
 import { TUNING } from '../config/tuning';
 import type { Game } from '../core/Game';
 
@@ -48,6 +49,13 @@ export class DebugPanel {
 
     const view = this.gui.addFolder('View');
     view.add(this, 'showColliders').name('Show collision shapes');
+
+    const gfx = this.gui.addFolder('Graphics');
+    gfx.add(GRAPHICS, 'effects').name('All effects');
+    gfx.add(GRAPHICS, 'ambientOcclusion').name('Ambient occlusion');
+    gfx.add(GRAPHICS, 'bloom').name('Bloom (glow)');
+    gfx.add(GRAPHICS, 'skyLighting').name('Sky lighting');
+    gfx.add(GRAPHICS, 'colorGrading').name('Color grading');
 
     this.lines = new LineSegments(new BufferGeometry(), new LineBasicMaterial({ vertexColors: true }));
     this.lines.frustumCulled = false;

@@ -2,7 +2,7 @@ import { Group, Vector3 } from 'three';
 import type { GameContext } from '../core/GameContext';
 import type { RAPIER } from '../physics/Physics';
 import { buildModel, disposeObject, PartDef } from '../rendering/ModelFactory';
-import type { LevelDef } from './LevelDef';
+import type { BlockDef, LevelDef } from './LevelDef';
 import { FadingCloud } from './props/FadingCloud';
 import { PROPS } from './props';
 
@@ -53,21 +53,22 @@ export function buildLevel(def: LevelDef, ctx: GameContext): Level {
   const hd = def.depth / 2;
 
   const blockParts: PartDef[] = [];
-  const addBlock = (pos: [number, number, number], size: [number, number, number], color: string, rotY = 0, collide = true) => {
-    blockParts.push({ pos, size, color, rot: rotY ? [0, rotY, 0] : undefined });
+  const addBlock = ({ pos, size, color, surface, rotY = 0, collide = true }: BlockDef) => {
+    blockParts.push({ pos, size, color, surface, rot: rotY ? [0, rotY, 0] : undefined });
     if (collide) level.addCollider(physics.addStaticBox(new Vector3(...pos), new Vector3(...size), rotY));
   };
 
   // Floor
-  addBlock([0, -0.5, 0], [def.width + 2, 1, def.depth + 2], def.floorColor);
+  addBlock({ pos: [0, -0.5, 0], size: [def.width + 2, 1, def.depth + 2], color: def.floorColor, surface: def.floorSurface });
 
   // Edge walls (visible)
   const t = 0.6;
   const h = def.edge.height;
-  addBlock([0, h / 2, -hd - t / 2], [def.width + 2 * t, h, t], def.edge.color);
-  addBlock([0, h / 2, hd + t / 2], [def.width + 2 * t, h, t], def.edge.color);
-  addBlock([-hw - t / 2, h / 2, 0], [t, h, def.depth], def.edge.color);
-  addBlock([hw + t / 2, h / 2, 0], [t, h, def.depth], def.edge.color);
+  const { color, surface } = def.edge;
+  addBlock({ pos: [0, h / 2, -hd - t / 2], size: [def.width + 2 * t, h, t], color, surface });
+  addBlock({ pos: [0, h / 2, hd + t / 2], size: [def.width + 2 * t, h, t], color, surface });
+  addBlock({ pos: [-hw - t / 2, h / 2, 0], size: [t, h, def.depth], color, surface });
+  addBlock({ pos: [hw + t / 2, h / 2, 0], size: [t, h, def.depth], color, surface });
 
   // Invisible walls so nobody leaves the arena (tall enough for flying)
   const wallH = 80;
@@ -80,7 +81,7 @@ export function buildLevel(def: LevelDef, ctx: GameContext): Level {
     level.addCollider(physics.addStaticBox(new Vector3(...pos), new Vector3(...size)));
   }
 
-  for (const b of def.blocks) addBlock(b.pos, b.size, b.color, b.rotY ?? 0, b.collide ?? true);
+  for (const b of def.blocks) addBlock(b);
   level.root.add(buildModel({ parts: blockParts }).root);
 
   // Props

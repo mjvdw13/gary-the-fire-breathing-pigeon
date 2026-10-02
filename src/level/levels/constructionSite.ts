@@ -11,9 +11,9 @@ function beam(x: number, y: number, z: number, length: number, rotY = 0): BlockD
   const [x1, z1] = along(length / 2 - 0.4);
   const [x2, z2] = along(-length / 2 + 0.4);
   return [
-    { pos: [x, y - 0.2, z], size: [length, 0.4, 1.4], color: STEEL, rotY },
-    { pos: [x1, (y - 0.4) / 2, z1], size: [0.4, y - 0.4, 0.4], color: STEEL_DARK, rotY },
-    { pos: [x2, (y - 0.4) / 2, z2], size: [0.4, y - 0.4, 0.4], color: STEEL_DARK, rotY },
+    { pos: [x, y - 0.2, z], size: [length, 0.4, 1.4], color: STEEL, surface: 'metal', rotY },
+    { pos: [x1, (y - 0.4) / 2, z1], size: [0.4, y - 0.4, 0.4], color: STEEL_DARK, surface: 'metal', rotY },
+    { pos: [x2, (y - 0.4) / 2, z2], size: [0.4, y - 0.4, 0.4], color: STEEL_DARK, surface: 'metal', rotY },
   ];
 }
 
@@ -25,14 +25,15 @@ export const constructionSite: LevelDef = {
   width: 46,
   depth: 46,
   floorColor: '#a08660',
-  edge: { color: '#c8c8c0', height: 1.1 },
+  floorSurface: 'dirt',
+  edge: { color: '#c8c8c0', height: 1.1, surface: 'concrete' },
   playerSpawn: new Vector3(0, 0.1, 15),
   bossSpawn: new Vector3(0, 0.1, -17),
   airHeight: [5, 9],
   blocks: [
     // Gravel and concrete pads (decoration)
-    { pos: [-10, 0.01, -10], size: [10, 0.02, 8], color: '#b3b3ab', collide: false },
-    { pos: [12, 0.01, 10], size: [8, 0.02, 10], color: '#8f7752', collide: false },
+    { pos: [-10, 0.01, -10], size: [10, 0.02, 8], color: '#b3b3ab', surface: 'concrete', collide: false },
+    { pos: [12, 0.01, 10], size: [8, 0.02, 10], color: '#8f7752', surface: 'dirt', collide: false },
     // Steel beams: low tier (~2.3 m) and high tier (~4.6 m)
     ...beam(-9, 2.3, 4, 7),
     ...beam(9, 2.3, -3, 7, Math.PI / 2),
@@ -71,7 +72,7 @@ function siteScenery(root: Group): void {
   const yellow = '#f2c230';
   const parts: PartDef[] = [
     // Ground outside the fence
-    { pos: [0, -0.6, 0], size: [400, 1, 400], color: '#8a7354' },
+    { pos: [0, -0.6, 0], size: [400, 1, 400], color: '#8a7354', surface: 'dirt' },
     // Crane tower + jib + counterweight
     { pos: [-36, 20, -30], size: [2, 40, 2], color: yellow },
     { pos: [-30, 40.5, -30], size: [34, 1.2, 1.2], color: yellow },
@@ -83,7 +84,7 @@ function siteScenery(root: Group): void {
   // Unfinished building skeleton
   for (let floor = 0; floor < 6; floor++) {
     const y = floor * 4;
-    parts.push({ pos: [40, y + 4, 25], size: [22, 0.5, 16], color: '#b9b9b0' });
+    parts.push({ pos: [40, y + 4, 25], size: [22, 0.5, 16], color: '#b9b9b0', surface: 'concrete' });
     for (const [dx, dz] of [
       [-10, -7],
       [10, -7],
@@ -92,7 +93,7 @@ function siteScenery(root: Group): void {
       [0, -7],
       [0, 7],
     ]) {
-      parts.push({ pos: [40 + dx, y + 2, 25 + dz], size: [0.6, 4, 0.6], color: STEEL });
+      parts.push({ pos: [40 + dx, y + 2, 25 + dz], size: [0.6, 4, 0.6], color: STEEL, surface: 'metal' });
     }
   }
   const model = buildModel({ parts });

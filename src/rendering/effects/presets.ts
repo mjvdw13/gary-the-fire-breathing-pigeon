@@ -19,6 +19,8 @@ export interface ParticlePreset {
   drag: number;
   /** How far from the center particles start. */
   spread: number;
+  /** Extra brightness so the particles glow (bloom). 1 = normal, 3 = very bright. */
+  glow?: number;
 }
 
 const preset = (p: ParticlePreset) => p;
@@ -46,6 +48,7 @@ export const PARTICLE_PRESETS = {
     gravity: 6,
     drag: 2,
     spread: 1,
+    glow: 3,
   }),
   hit: preset({
     count: 8,
@@ -68,6 +71,7 @@ export const PARTICLE_PRESETS = {
     gravity: -2,
     drag: 2,
     spread: 0.1,
+    glow: 3,
   }),
   goldTrail: preset({
     count: 2,
@@ -79,6 +83,7 @@ export const PARTICLE_PRESETS = {
     gravity: -1,
     drag: 2,
     spread: 0.1,
+    glow: 3,
   }),
   laserTrail: preset({
     count: 1,
@@ -90,6 +95,7 @@ export const PARTICLE_PRESETS = {
     gravity: 0,
     drag: 1,
     spread: 0.05,
+    glow: 3,
   }),
   sparks: preset({
     count: 3,
@@ -101,6 +107,7 @@ export const PARTICLE_PRESETS = {
     gravity: 3,
     drag: 2,
     spread: 0.15,
+    glow: 3,
   }),
   featherTrail: preset({
     count: 1,

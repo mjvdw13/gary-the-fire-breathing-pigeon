@@ -11,15 +11,16 @@ export const rooftop: LevelDef = {
   width: 44,
   depth: 44,
   floorColor: '#8d9299',
-  edge: { color: '#a8826a', height: 1 },
+  floorSurface: 'concrete',
+  edge: { color: '#a8826a', height: 1, surface: 'brick' },
   playerSpawn: new Vector3(0, 0.1, 14),
   bossSpawn: new Vector3(0, 0.1, -12),
   airHeight: [5, 8.5],
   blocks: [
     // Darker tar patches (decoration only)
-    { pos: [-6, 0.01, 4], size: [6, 0.02, 4], color: '#7b8087', collide: false },
-    { pos: [9, 0.01, 6], size: [4, 0.02, 7], color: '#7b8087', collide: false },
-    { pos: [3, 0.01, -8], size: [8, 0.02, 3], color: '#80858c', collide: false },
+    { pos: [-6, 0.01, 4], size: [6, 0.02, 4], color: '#7b8087', surface: 'concrete', collide: false },
+    { pos: [9, 0.01, 6], size: [4, 0.02, 7], color: '#7b8087', surface: 'concrete', collide: false },
+    { pos: [3, 0.01, -8], size: [8, 0.02, 3], color: '#80858c', surface: 'concrete', collide: false },
   ],
   props: [
     { type: 'rooftopDoor', pos: [-16, 0, -16], rotY: Math.PI / 4 },
@@ -55,7 +56,7 @@ export const rooftop: LevelDef = {
 function citySkyline(root: Group, random: () => number): void {
   const parts: PartDef[] = [
     // Our building, below the roof
-    { pos: [0, -31, 0], size: [46.5, 60, 46.5], color: '#9c8f80' },
+    { pos: [0, -31, 0], size: [46.5, 60, 46.5], color: '#9c8f80', surface: 'brick' },
   ];
   // Rows of windows on our building
   for (let y = -3; y > -40; y -= 3.5) {
@@ -65,7 +66,7 @@ function citySkyline(root: Group, random: () => number): void {
       [23.3, 0, 0.1, 44],
       [-23.3, 0, 0.1, 44],
     ]) {
-      parts.push({ pos: [x, y, z], size: [w, 1.4, d], color: '#5a7a9a' });
+      parts.push({ pos: [x, y, z], size: [w, 1.4, d], color: '#5a7a9a', surface: 'glass' });
     }
   }
 
@@ -80,12 +81,12 @@ function citySkyline(root: Group, random: () => number): void {
     const x = Math.cos(angle) * dist;
     const z = Math.sin(angle) * dist;
     const color = pick(random, palette);
-    parts.push({ pos: [x, (top + bottom) / 2, z], size: [w, top - bottom, d], rot: [0, -angle, 0], color });
+    parts.push({ pos: [x, (top + bottom) / 2, z], size: [w, top - bottom, d], rot: [0, -angle, 0], color, surface: 'concrete' });
     // Window stripes on the side facing us
     for (let y = top - 2.5; y > top - 20; y -= 3.5) {
       const fx = x - Math.cos(angle) * (w / 2 + 0.05);
       const fz = z - Math.sin(angle) * (w / 2 + 0.05);
-      parts.push({ pos: [fx, y, fz], size: [0.1, 1.2, d * 0.8], rot: [0, -angle, 0], color: '#6d8fb3' });
+      parts.push({ pos: [fx, y, fz], size: [0.1, 1.2, d * 0.8], rot: [0, -angle, 0], color: '#6d8fb3', surface: 'glass' });
     }
   }
   const model = buildModel({ parts });

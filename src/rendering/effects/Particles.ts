@@ -75,7 +75,7 @@ export class Particles {
       part.velocity.copy(randomInSphere(1)).normalize().multiplyScalar(speed);
       if (options.direction) part.velocity.addScaledVector(options.direction, speed);
       part.velocity.y += p.upward * scale;
-      part.color.set(p.colors[Math.floor(Math.random() * p.colors.length)]);
+      part.color.set(p.colors[Math.floor(Math.random() * p.colors.length)]).multiplyScalar(p.glow ?? 1);
       part.size = lerp(p.size[0], p.size[1], Math.random()) * scale;
       part.maxLife = part.life = lerp(p.life[0], p.life[1], Math.random());
       part.gravity = p.gravity;
