@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, SphereGeometry } from 'three';
+import { BoxGeometry, BufferAttribute, BufferGeometry, ConeGeometry, CylinderGeometry, SphereGeometry } from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /**
@@ -33,8 +33,18 @@ function bevelFor(size: Vec3): number {
   return Math.min(0.05, Math.min(...size) * 0.2);
 }
 
+/**
+ * A rounded box has ~9x more triangles than a plain one, so only round the edges where
+ * you could actually see it: not on huge things (buildings, floors) or paper-thin ones.
+ */
+function worthRounding(size: Vec3): boolean {
+  return Math.max(...size) <= 6 && bevelFor(size) >= 0.01;
+}
+
 function roundedBox([w, h, d]: Vec3): BufferGeometry {
-  const geo = new RoundedBoxGeometry(w, h, d, 2, bevelFor([w, h, d]));
+  const geo = worthRounding([w, h, d])
+    ? new RoundedBoxGeometry(w, h, d, 1, bevelFor([w, h, d])) // 1 segment = one soft edge strip
+    : new BoxGeometry(w, h, d);
   // "Box projection": each face gets UVs from the two directions it spreads along.
   const pos = geo.attributes.position;
   const normal = geo.attributes.normal;
@@ -53,10 +63,10 @@ function roundedBox([w, h, d]: Vec3): BufferGeometry {
 function roundShape(shape: Exclude<Shape, 'box'>, [w, h, d]: Vec3): BufferGeometry {
   const geo =
     shape === 'sphere'
-      ? new SphereGeometry(0.5, 20, 14)
+      ? new SphereGeometry(0.5, 16, 10)
       : shape === 'cylinder'
-        ? new CylinderGeometry(0.5, 0.5, 1, 20)
-        : new ConeGeometry(0.5, 1, 20);
+        ? new CylinderGeometry(0.5, 0.5, 1, 16)
+        : new ConeGeometry(0.5, 1, 16);
   geo.scale(w, h, d);
   // Stretch the UVs so 1 UV unit = 1 meter around and up the shape.
   const around = Math.PI * (w + d) * 0.5;

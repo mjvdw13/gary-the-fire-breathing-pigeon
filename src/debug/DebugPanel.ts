@@ -2,6 +2,7 @@ import GUI from 'lil-gui';
 import { BufferAttribute, BufferGeometry, LineBasicMaterial, LineSegments } from 'three';
 import { GRAPHICS } from '../config/graphics';
 import { TUNING } from '../config/tuning';
+import { SPEED } from '../rendering/AutoQuality';
 import type { Game } from '../core/Game';
 
 /**
@@ -51,9 +52,13 @@ export class DebugPanel {
     view.add(this, 'showColliders').name('Show collision shapes');
 
     const gfx = this.gui.addFolder('Graphics');
+    gfx.add(SPEED, 'fps').name('Frames per second').disable().listen();
+    gfx.add(SPEED, 'qualityStep').name('Auto quality step (0 = best)').disable().listen();
+    gfx.add(GRAPHICS, 'autoQuality').name('Auto quality');
+    gfx.add(GRAPHICS, 'resolution', 0.5, 1, 0.05).name('Resolution').listen();
     gfx.add(GRAPHICS, 'effects').name('All effects');
-    gfx.add(GRAPHICS, 'ambientOcclusion').name('Ambient occlusion');
-    gfx.add(GRAPHICS, 'bloom').name('Bloom (glow)');
+    gfx.add(GRAPHICS, 'ambientOcclusion').name('Ambient occlusion').listen();
+    gfx.add(GRAPHICS, 'bloom').name('Bloom (glow)').listen();
     gfx.add(GRAPHICS, 'skyLighting').name('Sky lighting');
     gfx.add(GRAPHICS, 'colorGrading').name('Color grading');
 

@@ -1,5 +1,6 @@
 import { Color, Group, Material, Mesh, MeshStandardMaterial, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { mergeStatic } from './mergeStatic';
 import { partGeometry } from './partGeometry';
 import { getSurface, SurfaceName } from './surfaces';
 
@@ -100,6 +101,20 @@ export class BlockModel {
     }
   }
 
+  /**
+   * Speed trick for models that never animate their parts (clouds, props):
+   * glue the parts into a few meshes. See mergeStatic.ts.
+   */
+  mergeParts(): this {
+    mergeStatic(this.root);
+    this.materials.length = 0;
+    this.baseColors.length = 0;
+    this.root.traverse((obj) => {
+      if (obj instanceof Mesh && obj.material instanceof MeshStandardMaterial) this.trackMaterial(obj.material);
+    });
+    return this;
+  }
+
   /** @internal */
   trackMaterial(m: MeshStandardMaterial): void {
     this.materials.push(m);
@@ -136,6 +151,7 @@ function buildParts(model: BlockModel, parts: PartDef[]): void {
       opacity: part.opacity ?? 1,
     });
     material.userData.glow = !!part.glow;
+    material.userData.surface = part.surface ?? 'plastic';
     material.userData.baseOpacity = part.opacity ?? 1;
     model.trackMaterial(material);
 

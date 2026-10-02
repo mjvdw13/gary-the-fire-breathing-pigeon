@@ -33,7 +33,7 @@ export class FadingCloud extends Entity {
         { shape: 'sphere', pos: [0, 0.05, -0.9], size: [1.4, 0.7, 1.4], color: '#eef5fc' },
         { shape: 'sphere', pos: [-0.3, -0.35, 0.9], size: [1.5, 0.6, 1.5], color: '#e3eef8' },
       ],
-    });
+    }).mergeParts();
     this.object3D.add(this.model.root);
   }
 

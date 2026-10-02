@@ -1,6 +1,7 @@
 import { Group, Vector3 } from 'three';
 import type { GameContext } from '../core/GameContext';
 import type { RAPIER } from '../physics/Physics';
+import { mergeStatic } from '../rendering/mergeStatic';
 import { buildModel, disposeObject, PartDef } from '../rendering/ModelFactory';
 import type { BlockDef, LevelDef } from './LevelDef';
 import { FadingCloud } from './props/FadingCloud';
@@ -106,6 +107,8 @@ export function buildLevel(def: LevelDef, ctx: GameContext): Level {
     level.root.add(scenery);
   }
 
+  // Nothing above ever moves, so glue it all into a few big meshes (much faster to draw).
+  mergeStatic(level.root);
   ctx.scene.add(level.root);
 
   // Clouds are entities because they change over time.

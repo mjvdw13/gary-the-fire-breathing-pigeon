@@ -1,5 +1,6 @@
 import { Camera, HalfFloatType, Scene, Vector2, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -11,7 +12,12 @@ import { GRAPHICS } from '../config/graphics';
  * "Post-processing": the picture is drawn into a hidden image first, then a chain of
  * effects touches it up before it reaches the screen:
  *
- *   sky → level & characters → ambient occlusion → bloom → tone mapping → color grading
+ *   sky → level & characters → ambient occlusion → bloom → tone mapping → color grading → smooth edges
+ *
+ * Speed notes (measured on a laptop with Intel UHD graphics):
+ * - Smoothing edges with FXAA (one cheap pass) instead of MSAA saved ~20 ms per frame.
+ * - Ambient occlusion is worked out at HALF size with 8 samples (it's blurry anyway):
+ *   ~8 ms instead of ~50 ms. A third of the size was cheaper but left dotted lines on edges.
  */
 export class PostFX {
   private composer: EffectComposer;
@@ -23,8 +29,8 @@ export class PostFX {
 
   constructor(webgl: WebGLRenderer, scene: Scene, skyScene: Scene, camera: Camera) {
     const size = webgl.getDrawingBufferSize(new Vector2());
-    // HalfFloat = colors brighter than white survive until the bloom pass. samples = smooth edges.
-    const target = new WebGLRenderTarget(size.x, size.y, { type: HalfFloatType, samples: 4 });
+    // HalfFloat = colors brighter than white survive until the bloom pass.
+    const target = new WebGLRenderTarget(size.x, size.y, { type: HalfFloatType });
     this.composer = new EffectComposer(webgl, target);
 
     this.skyPass = new RenderPass(skyScene, camera);
@@ -34,8 +40,8 @@ export class PostFX {
     // Ambient occlusion: darkens creases, corners and the ground right under things.
     this.ao = new GTAOPass(scene, camera, size.x, size.y);
     this.ao.blendIntensity = 1.6; // >1 = darker than "realistic", which reads better on bright blocky scenes
-    this.ao.updateGtaoMaterial({ radius: 1.2, distanceExponent: 1.5, thickness: 2, scale: 1, samples: 16 });
-    this.ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+    this.ao.updateGtaoMaterial({ radius: 1.2, distanceExponent: 1.5, thickness: 2, scale: 1, samples: 8 });
+    this.ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 8 });
 
     // Bloom: only things brighter than `threshold` glow.
     this.bloom = new UnrealBloomPass(size.clone(), 0.45, 0.4, 1.1);
@@ -48,6 +54,13 @@ export class PostFX {
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass()); // tone mapping + screen colors
     this.composer.addPass(this.grade);
+    this.composer.addPass(new FXAAPass()); // smooth jagged edges
+    this.shrinkAO(size.x, size.y);
+  }
+
+  /** The composer sizes every pass to the full screen; make ambient occlusion half size. */
+  private shrinkAO(width: number, height: number): void {
+    this.ao.setSize(Math.round(width / 2), Math.round(height / 2));
   }
 
   render(camera: Camera): void {
@@ -61,6 +74,7 @@ export class PostFX {
   setSize(width: number, height: number, pixelRatio: number): void {
     this.composer.setPixelRatio(pixelRatio);
     this.composer.setSize(width, height);
+    this.shrinkAO(width * pixelRatio, height * pixelRatio);
   }
 }
 

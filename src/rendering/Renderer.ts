@@ -13,6 +13,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { GRAPHICS } from '../config/graphics';
+import { AutoQuality } from './AutoQuality';
 import { PostFX } from './PostFX';
 import { SkyDome } from './SkyDome';
 
@@ -42,10 +43,15 @@ export class Renderer {
   private skyLight: Texture | null = null;
   private pmrem: PMREMGenerator;
   private postFX: PostFX | null = null;
+  private autoQuality = new AutoQuality();
+  /** The GRAPHICS.resolution the canvas is currently sized for. */
+  private resolution = GRAPHICS.resolution;
+  /** Never draw more than 1.5 pixels per screen pixel — sharper than that is hard to see. */
+  private maxPixelRatio = Math.min(window.devicePixelRatio, 1.5);
 
   constructor(canvas: HTMLCanvasElement) {
     this.webgl = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    this.webgl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.webgl.setPixelRatio(this.maxPixelRatio * this.resolution);
     this.webgl.shadowMap.enabled = true;
     this.webgl.shadowMap.type = PCFShadowMap;
     this.webgl.outputColorSpace = SRGBColorSpace;
@@ -96,10 +102,17 @@ export class Renderer {
     this.sun.position.copy(focus).add(this.sunOffset);
   }
 
-  render(camera: Camera, scene: Scene = this.scene): void {
+  /** `frameDt` = real seconds since the last frame (lets auto quality measure speed). */
+  render(camera: Camera, scene: Scene = this.scene, frameDt = 0): void {
     if (scene !== this.scene) {
       this.webgl.render(scene, camera); // the menu showcase: no effects needed
       return;
+    }
+    if (frameDt > 0) this.autoQuality.update(frameDt);
+    if (GRAPHICS.resolution !== this.resolution) {
+      this.resolution = GRAPHICS.resolution;
+      this.webgl.setPixelRatio(this.maxPixelRatio * this.resolution);
+      this.resize();
     }
     this.sky.mesh.position.copy(camera.position);
     const fancy = GRAPHICS.effects;

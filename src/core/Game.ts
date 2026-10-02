@@ -160,7 +160,7 @@ export class Game implements GameContext {
     this.camera.update(this.input, this.physics, focus, frameDt, playing && this.input.pointerLocked);
     this.renderer.followWithShadows(focus);
     this.debug.update();
-    this.renderer.render(this.camera.camera);
+    this.renderer.render(this.camera.camera, this.renderer.scene, frameDt);
 
     if (playing || this.flow.is('paused')) {
       this.hud.update({
