@@ -33,8 +33,8 @@ export class PostFX {
 
     // Ambient occlusion: darkens creases, corners and the ground right under things.
     this.ao = new GTAOPass(scene, camera, size.x, size.y);
-    this.ao.blendIntensity = 1;
-    this.ao.updateGtaoMaterial({ radius: 2.5, distanceExponent: 2, thickness: 2, scale: 2, samples: 16 });
+    this.ao.blendIntensity = 1.6; // >1 = darker than "realistic", which reads better on bright blocky scenes
+    this.ao.updateGtaoMaterial({ radius: 1.2, distanceExponent: 1.5, thickness: 2, scale: 1, samples: 16 });
     this.ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
 
     // Bloom: only things brighter than `threshold` glow.

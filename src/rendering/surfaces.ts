@@ -116,16 +116,16 @@ const concrete: SurfaceRecipe = {
 };
 
 const dirt: SurfaceRecipe = {
-  meters: 3,
+  meters: 4,
   roughness: 1,
   metalness: 0,
-  bumpiness: 3,
+  bumpiness: 1.2,
   draw(tone, height, size, rand) {
     const blotches = fractalNoise(size, 6, 4, rand);
     const pebbles = noise(size, 48, rand);
     for (let i = 0; i < tone.length; i++) {
-      const stone = Math.max(0, pebbles[i] - 0.72) * 4; // bumps poking up
-      tone[i] = 0.72 + blotches[i] * 0.25 + stone * 0.1;
+      const stone = Math.max(0, pebbles[i] - 0.8) * 3; // a few bumps poking up
+      tone[i] = 0.8 + blotches[i] * 0.2 + stone * 0.08;
       height[i] = blotches[i] * 0.5 + stone;
     }
   },
